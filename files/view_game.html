@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Компьютерные игры</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="lato-font.css">
+</head>
+
+<body>
+<main>
+    <section class="games-base">
+        <div class="container">
+            <input class="games-base-button" type="submit" value="Exit" onClick='location.href="{% url 'catalog:index' %}"'>
+            <h2 class="games-base-title">Game List</h2>
+            <input class="games-base-button" type="submit" value="Add" onClick='location.href="{% url 'catalog:add_game' %}"'>
+            {% if contacts %}
+            <div class="wrapper">
+                <form action="#" method="get">
+                    {% for i in contacts %}
+
+                    <div class="buttons">
+                        <a href="{% url 'catalog:view_game_id' i.id %}"><h3 class="games-base-names">{{i.name}}</a>
+                        <a href="{% url 'catalog:edit_game_id' i.id %}" class="btn">Edit</a>
+                        <a href="{% url 'catalog:delete_game_id' i.id %}" class="btn">Delete</a>
+                    </div>
+
+                    {% endfor %}
+                    <div class="pagination">
+                    <span class="step-links">
+                        {% if contacts.has_previous %}
+                            <a href="?page={{ contacts.previous_page_number }}">previous</a>
+                        {% endif %}
+
+                        <span class="current">
+                            Page {{ contacts.number }} of {{ contacts.paginator.num_pages }}.
+                        </span>
+
+                        {% if contacts.has_next %}
+                            <a href="?page={{ contacts.next_page_number }}">next</a>
+                        {% endif %}
+                    </span>
+                    </div>
+                    <textarea name="description" cols="30" rows="12"></textarea>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content"></div>
+        </div>
+    </footer>
+</main>
+</body>
+
+</html>
