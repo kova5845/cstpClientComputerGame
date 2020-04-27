@@ -9,6 +9,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -58,17 +59,39 @@ public class ComputerGame extends Thread{
                     }
                     cfg.setDefaultEncoding("UTF-8");
                     cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+                    Path filePath = Path.of(this.directory + requestUrl);
                     switch (requestType) {
                         case "POST":
-                            System.out.println("server handle post request");
+                            switch (requestUrl) {
+                                case "/add_game_game.html":
+                                    System.out.println("boyyyyy" + requestText.get("requestBody"));
+                                    System.out.println("add_game_game");
+                                    break;
+                                default:
+                                    String type = CONTENT_TYPES.get("text");
+                                    this.sendHeader(output, 404, "Not Found", type, NOT_FOUND_MESSAGE.length(), requestType);
+                                    output.write(NOT_FOUND_MESSAGE.getBytes());
+                            }
                             break;
                         case "GET":
-                            Path filePath = Path.of(this.directory + requestUrl);
                             switch (requestUrl) {
                                 case "/index.html":
                                     this.index(filePath, requestType, cfg, output);
                                     break;
                                 case "/view_game.html":
+                                    this.view_game(filePath, requestType, cfg, output);
+                                    break;
+                                case "/add_game.html":
+                                    this.add_game(filePath, requestType, cfg, output);
+                                    break;
+                                case "/view_game_id.html":
+                                    this.view_game_id(filePath, requestType, cfg, output);
+                                    break;
+                                case "/edit_game_id.html":
+                                    this.edit_game_id(filePath, requestType, cfg, output);
+                                    break;
+                                case "/delete_game_id.html":
+                                    this.delete_game_id(filePath, requestType, cfg, output);
                                     break;
                                 default:
                                     String type = CONTENT_TYPES.get("text");
@@ -93,12 +116,18 @@ public class ComputerGame extends Thread{
     }
 
     private HashMap<String, Object> getRequestText(InputStream input) throws IOException {
-        Scanner reader = new Scanner(input);
-        String line = "";
+        System.out.println(input.available() + "qwe");
+        byte[] arr = new byte[input.available()];
+        input.read(arr);
+        String request = new String(arr);
+        System.out.println(request);
         HashMap<String, Object> map = new HashMap<>();
-        String[] head = reader.nextLine().split(" ");
+        String[] head = request.split("\n")[0].split(" ");
         map.put("requestType", head[0]);
         map.put("requestUrl", head[1]);
+        if(head[0].equals("POST")){
+            map.put("requestBody", request.split("\r\n\r\n")[1]);
+        }
         return map;
     }
 
@@ -119,8 +148,11 @@ public class ComputerGame extends Thread{
 
     private void view_game(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
         Map<String, Object> root = new HashMap<>();
-        root.put("games", "Alexey");
-        Template template = cfg.getTemplate("index.html");
+        ArrayList<Game> games = new ArrayList<>();
+        games.add(new Game("Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
+        games.add(new Game("CS:GO", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
+        root.put("games", games);
+        Template template = cfg.getTemplate("view_game.html");
         String extension = this.getFileExtension(filePath);
         String type = CONTENT_TYPES.get(extension);
 
@@ -129,10 +161,33 @@ public class ComputerGame extends Thread{
 
         Writer writer = new OutputStreamWriter(output);
         template.process(root, writer);
+        writer.flush();
 
     }
 
-    private String getRequestType(String input){
+    private void add_game(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+        Map<String, Object> root = new HashMap<>();
+        Template template = cfg.getTemplate("add_game.html");
+        String extension = this.getFileExtension(filePath);
+        String type = CONTENT_TYPES.get(extension);
+
+        byte[] fileBytes = Files.readAllBytes(filePath);
+        this.sendHeader(output, 200, "OK", type, fileBytes.length, requestType);
+
+        Writer writer = new OutputStreamWriter(output);
+        template.process(root, writer);
+        writer.flush();
+    }
+
+    private void view_game_id(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+    }
+
+    private void edit_game_id(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+    }
+
+    private void delete_game_id(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+    }
+        private String getRequestType(String input){
         return input.split(" ")[0];
     }
 
@@ -149,7 +204,7 @@ public class ComputerGame extends Thread{
     private String sendHeader(OutputStream output, int statusCode, String statusText, String type, long length, String requestType){
         PrintStream ps = new PrintStream(output);
         String answer = "";
-        File file = new File("//home//alexey//kursach//Config.txt");
+        File file = new File("Config.txt");
         try (FileInputStream fin = new FileInputStream(file)) {
             answer = new String(fin.readAllBytes());
             answer = String.format(answer, statusCode, statusText, type, length);

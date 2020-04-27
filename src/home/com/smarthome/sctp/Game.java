@@ -1,19 +1,21 @@
 package home.com.smarthome.sctp;
 
 public class Game {
+    private String scAddr;
     private String name;
     private String genre;
     private String setting;
     private String companyDevelop;
     private String companyRelease;
     private String engine;
-    private String[] platform;
+    private String platform;
 
     public Game(){
 
     }
 
-    public Game(String name, String genre, String setting, String companyDevelop, String companyRelease, String engine, String[] platform) {
+    public Game(String name, String genre, String setting, String companyDevelop, String companyRelease, String engine, String platform) {
+        this.scAddr = "";
         this.name = name;
         this.genre = genre;
         this.setting = setting;
@@ -71,11 +73,19 @@ public class Game {
         this.engine = engine;
     }
 
-    public String[] getPlatform() {
+    public String getPlatform() {
         return platform;
     }
 
-    public void setPlatform(String[] platform) {
+    public void setPlatform(String platform) {
         this.platform = platform;
+    }
+
+    public String getScAddr() {
+        return scAddr;
+    }
+
+    public void setScAddr(String scAddr) {
+        this.scAddr = scAddr;
     }
 }

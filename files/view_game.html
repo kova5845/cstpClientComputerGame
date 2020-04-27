@@ -14,40 +14,21 @@
 <main>
     <section class="games-base">
         <div class="container">
-            <input class="games-base-button" type="submit" value="Exit" onClick='location.href="{% url 'catalog:index' %}"'>
+            <input class="games-base-button" type="submit" value="Exit" onClick='location.href="index.html"'>
             <h2 class="games-base-title">Game List</h2>
-            <input class="games-base-button" type="submit" value="Add" onClick='location.href="{% url 'catalog:add_game' %}"'>
-            {% if contacts %}
+            <input class="games-base-button" type="submit" value="Add" onClick='location.href="add_game.html"'>
             <div class="wrapper">
                 <form action="#" method="get">
-                    {% for i in contacts %}
-
+                    <#list games as game>
                     <div class="buttons">
-                        <a href="{% url 'catalog:view_game_id' i.id %}"><h3 class="games-base-names">{{i.name}}</a>
-                        <a href="{% url 'catalog:edit_game_id' i.id %}" class="btn">Edit</a>
-                        <a href="{% url 'catalog:delete_game_id' i.id %}" class="btn">Delete</a>
+                        <a href="view_game_id.html"><h3 class="games-base-names">${game.name}</h3></a>
+                        <a href="edit_game_id.html" class="btn">Edit</a>
+                        <a href="delete_game_id.html" class="btn">Delete</a>
                     </div>
-
-                    {% endfor %}
-                    <div class="pagination">
-                    <span class="step-links">
-                        {% if contacts.has_previous %}
-                            <a href="?page={{ contacts.previous_page_number }}">previous</a>
-                        {% endif %}
-
-                        <span class="current">
-                            Page {{ contacts.number }} of {{ contacts.paginator.num_pages }}.
-                        </span>
-
-                        {% if contacts.has_next %}
-                            <a href="?page={{ contacts.next_page_number }}">next</a>
-                        {% endif %}
-                    </span>
-                    </div>
-                    <textarea name="description" cols="30" rows="12"></textarea>
+                    <#else>
+                    </#list>
                 </form>
             </div>
-            {% endif %}
         </div>
     </section>
 
