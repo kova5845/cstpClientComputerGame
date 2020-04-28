@@ -1,7 +1,5 @@
 package home.com.smarthome.sctp;
 
-import java.nio.CharBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 public class GameRest {
@@ -25,9 +23,7 @@ public class GameRest {
                 elem);
         if(iter5.next()){
             if(sctpClient.getLinkContent(iter5.value(2)) != null){
-                CharBuffer ch = StandardCharsets.UTF_8.decode(sctpClient.getLinkContent(iter5.value(2)));
-                iter5.next();
-                return ch.toString();
+                return SctpClient.ByteBufferToString(sctpClient.getLinkContent(iter5.value(2)));
             }
             else{
                 return this.get(iter5.value(2), ID);
@@ -88,8 +84,23 @@ public class GameRest {
     public Game getGame(String name){
         Game game = new Game();
         game.setName(name);
-        ScAddr addr = sctpClient.findLinksByContent(name);
-
+        SctpIterator iter = sctpClient.iterate3(SctpIterator.Iterator3F_A_A,
+                COMPUTER_GAME,
+                new ScType(ScType.ArcPosConstPerm),
+                new ScType(ScType.Node));
+        while(iter.next()){
+            if(name.equals(this.get(iter.value(2), ID))){
+                game.setScAddr(iter.value(2).getValue());
+                game.setName(this.get(iter.value(2), ID));
+                game.setCompanyDevelop(this.get(iter.value(2), COMPANY_DEVELOP));
+                game.setCompanyRelease(this.get(iter.value(2), COMPANY_RELEASE));
+                game.setEngine(this.get(iter.value(2), ENGINE));
+                game.setPlatform(this.get(iter.value(2), PLATFORM));
+                game.setGenre(this.get3(iter.value(2), GENRE));
+                game.setSetting(this.get3(iter.value(2), SETTING));
+            }
+        }
+        System.out.println(game.getScAddr());
         return game;
     }
 
@@ -106,8 +117,9 @@ public class GameRest {
         PLATFORM = sctpClient.findElementBySystemIdentifier("nrel_platform");
         ENGINE = sctpClient.findElementBySystemIdentifier("nrel_game_engine");
         ID = sctpClient.findElementBySystemIdentifier("nrel_main_idtf");
-        this.getGame("Dota 2");
-        this.getGames();
+//        this.getGames();
+        this.getGame("Paragon");
+
     }
 
     public static void main(String[] args) {
