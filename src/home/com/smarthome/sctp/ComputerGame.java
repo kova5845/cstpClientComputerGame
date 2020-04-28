@@ -158,8 +158,8 @@ public class ComputerGame extends Thread{
         Path filePath = Path.of(directory + "/view_game.html");
         Map<String, Object> root = new HashMap<>();
         ArrayList<Game> games = new ArrayList<>();
-        games.add(new Game("1", "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
-        games.add(new Game("2", "CS:GO", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
+        games.add(new Game(1, "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
+        games.add(new Game(1, "CS:GO", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
         root.put("games", games);
         Template template = cfg.getTemplate("/view_game.html");
         String extension = this.getFileExtension(filePath);
@@ -189,7 +189,7 @@ public class ComputerGame extends Thread{
         System.out.println(id);
         Path filePath = Path.of(directory + "/view_game_id.html");
         Map<String, Object> root = new HashMap<>();
-        Game game = new Game("1", "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows");
+        Game game = new Game(1, "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows");
         root.put("game", game);
         Template template = cfg.getTemplate("/view_game_id.html");
         String extension = this.getFileExtension(filePath);
@@ -205,7 +205,7 @@ public class ComputerGame extends Thread{
         System.out.println(id);
         Path filePath = Path.of(directory + "/edit_game_id.html");
         Map<String, Object> root = new HashMap<>();
-        Game game = new Game("1", "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows");
+        Game game = new Game(1, "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows");
         root.put("game", game);
         Template template = cfg.getTemplate("/edit_game_id.html");
         String extension = this.getFileExtension(filePath);
@@ -223,8 +223,8 @@ public class ComputerGame extends Thread{
         Path filePath = Path.of(directory + "/view_game.html");
         Map<String, Object> root = new HashMap<>();
         ArrayList<Game> games = new ArrayList<>();
-        games.add(new Game("1", "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
-        games.add(new Game("2", "CS:GO", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
+        games.add(new Game(1, "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
+        games.add(new Game(1, "CS:GO", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
         root.put("games", games);
         Template template = cfg.getTemplate("/view_game.html");
         String extension = this.getFileExtension(filePath);
