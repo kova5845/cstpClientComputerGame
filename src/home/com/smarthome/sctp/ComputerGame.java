@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
 
 public class ComputerGame extends Thread{
 
@@ -47,10 +46,10 @@ public class ComputerGame extends Thread{
             OutputStream output = this.socket.getOutputStream();
             while (true){
                 if(input.available() != 0){
-                    HashMap<String, Object> requestText = this.getRequestText(input);
+                    HashMap<String, String> requestText = this.getRequestText(input);
                     System.out.println(requestText);
-                    String requestType = (String) requestText.get("requestType");
-                    String requestUrl = (String) requestText.get("requestUrl");
+                    String requestType = requestText.get("requestType");
+                    String requestUrl = requestText.get("requestUrl");
                     Configuration cfg = new Configuration(Configuration.VERSION_2_3_30);
                     try {
                         cfg.setDirectoryForTemplateLoading(new File("files"));
@@ -59,13 +58,14 @@ public class ComputerGame extends Thread{
                     }
                     cfg.setDefaultEncoding("UTF-8");
                     cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-                    Path filePath = Path.of(this.directory + requestUrl);
                     switch (requestType) {
                         case "POST":
                             switch (requestUrl) {
-                                case "/add_game_game.html":
-                                    System.out.println("boyyyyy" + requestText.get("requestBody"));
-                                    System.out.println("add_game_game");
+                                case "/add_game_game":
+                                    this.add_game_game(requestType, cfg, output, requestText.get("requestBody"));
+                                    break;
+                                case "/edit_game_game":
+                                    this.edit_game_game(requestType, cfg, output, requestText.get("requestBody"));
                                     break;
                                 default:
                                     String type = CONTENT_TYPES.get("text");
@@ -75,32 +75,34 @@ public class ComputerGame extends Thread{
                             break;
                         case "GET":
                             switch (requestUrl) {
-                                case "/index.html":
-                                    this.index(filePath, requestType, cfg, output);
+                                case "/style.css":
+                                    this.style(requestType, output);
                                     break;
-                                case "/view_game.html":
-                                    this.view_game(filePath, requestType, cfg, output);
+                                case "/index":
+                                    this.index(requestType, cfg, output);
                                     break;
-                                case "/add_game.html":
-                                    this.add_game(filePath, requestType, cfg, output);
+                                case "/view_game":
+                                    this.view_game(requestType, cfg, output);
                                     break;
-                                case "/view_game_id.html":
-                                    this.view_game_id(filePath, requestType, cfg, output);
-                                    break;
-                                case "/edit_game_id.html":
-                                    this.edit_game_id(filePath, requestType, cfg, output);
-                                    break;
-                                case "/delete_game_id.html":
-                                    this.delete_game_id(filePath, requestType, cfg, output);
+                                case "/add_game":
+                                    this.add_game(requestType, cfg, output);
                                     break;
                                 default:
-                                    String type = CONTENT_TYPES.get("text");
-                                    this.sendHeader(output, 404, "Not Found", type, NOT_FOUND_MESSAGE.length(), requestType);
-                                    output.write(NOT_FOUND_MESSAGE.getBytes());
+                                    if(requestUrl.startsWith("/view_game_id?id=")) {
+                                        this.view_game_id(requestType, cfg, output, requestUrl.split("=")[1]);
+                                    }
+                                    else if(requestUrl.startsWith("/edit_game_id?id=")) {
+                                        this.edit_game_id(requestType, cfg, output, requestUrl.split("=")[1]);
+                                    }
+                                    else if(requestUrl.startsWith("/delete_game_id?id=")) {
+                                        this.delete_game_id(requestType, cfg, output, requestUrl.split("=")[1]);
+                                    }
+                                    else{
+                                        String type = CONTENT_TYPES.get("text");
+                                        this.sendHeader(output, 404, "Not Found", type, NOT_FOUND_MESSAGE.length(), requestType);
+                                        output.write(NOT_FOUND_MESSAGE.getBytes());
+                                    }
                             }
-                            break;
-                        case "OPTIONS":
-                            System.out.println("server handle option request");
                             break;
                         default:
                             System.out.println("DEFAULT");
@@ -115,13 +117,22 @@ public class ComputerGame extends Thread{
         }
     }
 
-    private HashMap<String, Object> getRequestText(InputStream input) throws IOException {
+    private void style(String requestType, OutputStream output) throws IOException, TemplateException {
+        Path filePath = Path.of(directory + "/style.css");
+        String extension = this.getFileExtension(filePath);
+        String type = CONTENT_TYPES.get(extension);
+        byte[] fileBytes = Files.readAllBytes(filePath);
+        this.sendHeader(output, 200, "OK", type, fileBytes.length, requestType);
+        output.write(fileBytes);
+    }
+
+    private HashMap<String, String> getRequestText(InputStream input) throws IOException {
         System.out.println(input.available() + "qwe");
         byte[] arr = new byte[input.available()];
         input.read(arr);
         String request = new String(arr);
         System.out.println(request);
-        HashMap<String, Object> map = new HashMap<>();
+        HashMap<String, String> map = new HashMap<>();
         String[] head = request.split("\n")[0].split(" ");
         map.put("requestType", head[0]);
         map.put("requestUrl", head[1]);
@@ -131,63 +142,109 @@ public class ComputerGame extends Thread{
         return map;
     }
 
-    private void index(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+    private void index(String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+        Path filePath = Path.of(directory + "/index.html");
         Map<String, Object> root = new HashMap<>();
-        root.put("user", "Alexey");
         Template template = cfg.getTemplate("index.html");
         String extension = this.getFileExtension(filePath);
         String type = CONTENT_TYPES.get(extension);
-
         byte[] fileBytes = Files.readAllBytes(filePath);
         this.sendHeader(output, 200, "OK", type, fileBytes.length, requestType);
-
         Writer writer = new OutputStreamWriter(output);
         template.process(root, writer);
-
     }
 
-    private void view_game(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+    private void view_game(String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+        Path filePath = Path.of(directory + "/view_game.html");
         Map<String, Object> root = new HashMap<>();
         ArrayList<Game> games = new ArrayList<>();
-        games.add(new Game("Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
-        games.add(new Game("CS:GO", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
+        games.add(new Game("1", "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
+        games.add(new Game("2", "CS:GO", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
         root.put("games", games);
-        Template template = cfg.getTemplate("view_game.html");
+        Template template = cfg.getTemplate("/view_game.html");
         String extension = this.getFileExtension(filePath);
         String type = CONTENT_TYPES.get(extension);
-
         byte[] fileBytes = Files.readAllBytes(filePath);
         this.sendHeader(output, 200, "OK", type, fileBytes.length, requestType);
-
         Writer writer = new OutputStreamWriter(output);
         template.process(root, writer);
         writer.flush();
 
     }
 
-    private void add_game(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+    private void add_game(String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+        Path filePath = Path.of(directory + "/add_game.html");
         Map<String, Object> root = new HashMap<>();
         Template template = cfg.getTemplate("add_game.html");
         String extension = this.getFileExtension(filePath);
         String type = CONTENT_TYPES.get(extension);
-
         byte[] fileBytes = Files.readAllBytes(filePath);
         this.sendHeader(output, 200, "OK", type, fileBytes.length, requestType);
-
         Writer writer = new OutputStreamWriter(output);
         template.process(root, writer);
         writer.flush();
     }
 
-    private void view_game_id(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+    private void view_game_id(String requestType, Configuration cfg, OutputStream output, String id) throws IOException, TemplateException {
+        System.out.println(id);
+        Path filePath = Path.of(directory + "/view_game_id.html");
+        Map<String, Object> root = new HashMap<>();
+        Game game = new Game("1", "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows");
+        root.put("game", game);
+        Template template = cfg.getTemplate("/view_game_id.html");
+        String extension = this.getFileExtension(filePath);
+        String type = CONTENT_TYPES.get(extension);
+        byte[] fileBytes = Files.readAllBytes(filePath);
+        this.sendHeader(output, 200, "OK", type, fileBytes.length - 150, requestType);
+        Writer writer = new OutputStreamWriter(output);
+        template.process(root, writer);
+        writer.flush();
     }
 
-    private void edit_game_id(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+    private void edit_game_id(String requestType, Configuration cfg, OutputStream output, String id) throws IOException, TemplateException {
+        System.out.println(id);
+        Path filePath = Path.of(directory + "/edit_game_id.html");
+        Map<String, Object> root = new HashMap<>();
+        Game game = new Game("1", "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows");
+        root.put("game", game);
+        Template template = cfg.getTemplate("/edit_game_id.html");
+        String extension = this.getFileExtension(filePath);
+        String type = CONTENT_TYPES.get(extension);
+        byte[] fileBytes = Files.readAllBytes(filePath);
+        this.sendHeader(output, 200, "OK", type, fileBytes.length - 150, requestType);
+        Writer writer = new OutputStreamWriter(output);
+        template.process(root, writer);
+        writer.flush();
     }
 
-    private void delete_game_id(Path filePath, String requestType, Configuration cfg, OutputStream output) throws IOException, TemplateException {
+    private void delete_game_id(String requestType, Configuration cfg, OutputStream output, String id) throws IOException, TemplateException {
+        System.out.println(id);
+
+        Path filePath = Path.of(directory + "/view_game.html");
+        Map<String, Object> root = new HashMap<>();
+        ArrayList<Game> games = new ArrayList<>();
+        games.add(new Game("1", "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
+        games.add(new Game("2", "CS:GO", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
+        root.put("games", games);
+        Template template = cfg.getTemplate("/view_game.html");
+        String extension = this.getFileExtension(filePath);
+        String type = CONTENT_TYPES.get(extension);
+        byte[] fileBytes = Files.readAllBytes(filePath);
+        this.sendHeader(output, 200, "OK", type, fileBytes.length, requestType);
+        Writer writer = new OutputStreamWriter(output);
+        template.process(root, writer);
+        writer.flush();
     }
-        private String getRequestType(String input){
+
+    private void add_game_game(String requestType, Configuration cfg, OutputStream output, String body) throws IOException, TemplateException {
+        System.out.println(body);
+    }
+
+    private void edit_game_game(String requestType, Configuration cfg, OutputStream output, String body) throws IOException, TemplateException {
+        System.out.println(body);
+    }
+
+    private String getRequestType(String input){
         return input.split(" ")[0];
     }
 

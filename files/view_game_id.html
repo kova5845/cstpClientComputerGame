@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Компьютерные игры</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="lato-font.css">
+</head>
+
+<body>
+<main>
+    <section class="games-base">
+        <div class="container">
+            <input class="games-base-button" type="submit" value="Exit" onClick='location.href="index"'>
+            <h2 class="games-base-title">Show Game</h2>
+            <div class="wrapper">
+                <form action="#" method="get">
+                    <dl>
+                        <dt><h3 class="games-base-names">Name:</h3></dt>
+                        <dd><p class="games-base-description">${game.name}</p></dd>
+
+                        <dt><h3 class="games-base-names">Genre:</h3></dt>
+                        <dd><p class="games-base-description">${game.genre}</p></dd>
+
+                        <dt><h3 class="games-base-names">Setting:</h3></dt>
+                        <dd><p class="games-base-description">${game.setting}</p></dd>
+
+                        <dt><h3 class="games-base-names">Company Develop:</h3></dt>
+                        <dd><p class="games-base-description">${game.companyDevelop}</p></dd>
+
+                        <dt><h3 class="games-base-names">Company Release:</h3></dt>
+                        <dd><p class="games-base-description">${game.companyRelease}</p></dd>
+
+                        <dt><h3 class="games-base-names">Engine:</h3></dt>
+                        <dd><p class="games-base-description">${game.engine}</p></dd>
+
+                        <dt><h3 class="games-base-names">Platform:</h3></dt>
+                        <dd><p class="games-base-description">${game.platform}</p></dd>
+                    </dl>
+                </form>
+            </div>
+            <div>
+                <input class="games-base-button" type="submit" value="Back" onClick='location.href="view_game"'>
+                <textarea name="description" cols="30" rows="12"></textarea>
+            </div>            
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content"></div>
+        </div>
+    </footer>
+</main>
+</body>
+
+</html>

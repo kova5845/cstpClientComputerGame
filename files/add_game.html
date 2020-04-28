@@ -14,10 +14,10 @@
 <main>
     <section class="games-base">
         <div class="container">
-            <input class="games-base-button" type="submit" value="Exit" onClick='location.href="index.html"'>
+            <input class="games-base-button" type="submit" value="Exit" onClick='location.href="index"'>
             <h2 class="games-base-title">Add</h2>
             <div class="wrapper">
-                <form action="add_game_game.html" method="post">
+                <form action="add_game_game" method="post">
                     <input type="text" name="name" placeholder="Name (Required)" minlength="1" required>
                     <input type="text" name="genre" placeholder="Genre (Required)" minlength="1" required>
                     <input type="text" name="setting" placeholder="Setting (Required)" minlength="1" required>
@@ -29,7 +29,8 @@
                 </form>
             </div>
             <div>
-                <input class="games-base-button" type="submit" value="Back" onClick='location.href="view_game.html"'>
+                <input class="games-base-button" type="submit" value="Back" onClick='location.href="view_game"'>
+                <textarea name="description" cols="30" rows="12"></textarea>
             </div>
         </div>
     </section>

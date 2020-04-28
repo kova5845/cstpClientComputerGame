@@ -14,8 +14,8 @@ public class Game {
 
     }
 
-    public Game(String name, String genre, String setting, String companyDevelop, String companyRelease, String engine, String platform) {
-        this.scAddr = "";
+    public Game(String csAddr, String name, String genre, String setting, String companyDevelop, String companyRelease, String engine, String platform) {
+        this.scAddr = csAddr;
         this.name = name;
         this.genre = genre;
         this.setting = setting;
