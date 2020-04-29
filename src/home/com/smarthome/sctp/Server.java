@@ -25,9 +25,9 @@ public class Server {
         }
     }
 
-//    public static void main(String[] args) {
-//        int port = 8080;
-//        String directory = "files";
-//        new Server(port, directory).start();
-//    }
+    public static void main(String[] args) {
+        int port = 8080;
+        String directory = "files";
+        new Server(port, directory).start();
+    }
 }

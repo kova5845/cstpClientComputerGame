@@ -28,15 +28,16 @@ public class ComputerGame extends Thread{
     private static final String NOT_FOUND_MESSAGE = "NOT FOUND";
     private Socket socket;
     private String directory;
-    private SctpClient sctpClient;
+    private GameRest gameRest;
 
     public ComputerGame(Socket socket, String directory) {
         this.socket = socket;
         this.directory = directory;
-        this.sctpClient = new SctpClient();
-        if(this.sctpClient.connect("localhost", 55770)){
+        this.gameRest = new GameRest();
+        if(this.gameRest.connect()){
             System.out.println("Connect Success");
         }
+
     }
 
     @Override
@@ -67,6 +68,9 @@ public class ComputerGame extends Thread{
                                 case "/edit_game_game":
                                     this.edit_game_game(requestType, cfg, output, requestText.get("requestBody"));
                                     break;
+                                case "/view_game_game":
+                                    this.view_game_game(requestType, cfg, output, requestText.get("requestBody"));
+                                    break;
                                 default:
                                     String type = CONTENT_TYPES.get("text");
                                     this.sendHeader(output, 404, "Not Found", type, NOT_FOUND_MESSAGE.length(), requestType);
@@ -89,7 +93,7 @@ public class ComputerGame extends Thread{
                                     break;
                                 default:
                                     if(requestUrl.startsWith("/view_game_id?id=")) {
-                                        this.view_game_id(requestType, cfg, output, requestUrl.split("=")[1]);
+                                        this.view_game_id(requestType, cfg, output, new Game());
                                     }
                                     else if(requestUrl.startsWith("/edit_game_id?id=")) {
                                         this.edit_game_id(requestType, cfg, output, requestUrl.split("=")[1]);
@@ -185,11 +189,9 @@ public class ComputerGame extends Thread{
         writer.flush();
     }
 
-    private void view_game_id(String requestType, Configuration cfg, OutputStream output, String id) throws IOException, TemplateException {
-        System.out.println(id);
+    private void view_game_id(String requestType, Configuration cfg, OutputStream output, Game game) throws IOException, TemplateException {
         Path filePath = Path.of(directory + "/view_game_id.html");
         Map<String, Object> root = new HashMap<>();
-        Game game = new Game(1, "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows");
         root.put("game", game);
         Template template = cfg.getTemplate("/view_game_id.html");
         String extension = this.getFileExtension(filePath);
@@ -219,7 +221,6 @@ public class ComputerGame extends Thread{
 
     private void delete_game_id(String requestType, Configuration cfg, OutputStream output, String id) throws IOException, TemplateException {
         System.out.println(id);
-
         Path filePath = Path.of(directory + "/view_game.html");
         Map<String, Object> root = new HashMap<>();
         ArrayList<Game> games = new ArrayList<>();
@@ -236,8 +237,28 @@ public class ComputerGame extends Thread{
         writer.flush();
     }
 
+    private void view_game_game(String requestType, Configuration cfg, OutputStream output, String body) throws IOException, TemplateException {
+        String name = body.split("=")[1].replace("+", " ");
+        System.out.println(name);
+        Game game = gameRest.getGame(name);
+        this.view_game_id(requestType, cfg, output, game);
+    }
+
     private void add_game_game(String requestType, Configuration cfg, OutputStream output, String body) throws IOException, TemplateException {
-        System.out.println(body);
+        String[] arr = body.split("&");
+        ArrayList<String> str = new ArrayList<>();
+        for(String s : arr){
+            str.add(s.split("=")[1].replace("+", " "));
+        }
+        Game game = new Game();
+        game.setName(str.get(0));
+        game.setSetting(str.get(2));
+        game.setCompanyDevelop(str.get(3));
+        game.setCompanyRelease(str.get(4));
+        game.setEngine(str.get(5));
+        game.setPlatform(str.get(6));
+        System.out.println(gameRest.setGame(game).getValue());
+        this.view_game("GET", cfg, output);
     }
 
     private void edit_game_game(String requestType, Configuration cfg, OutputStream output, String body) throws IOException, TemplateException {
