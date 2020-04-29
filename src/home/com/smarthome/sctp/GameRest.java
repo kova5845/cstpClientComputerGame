@@ -49,6 +49,30 @@ public class GameRest {
         return "";
     }
 
+    public Game getGameID(String name){
+        Game game = new Game();
+        game.setName(name);
+        ScAddr[] nameAddr = sctpClient.findLinksByContent(SctpClient.ByteBufferFromString(name));
+        if(nameAddr == null)
+            return null;
+        SctpIterator iter5 = sctpClient.iterate5(SctpIterator.Iterator5A_A_F_A_F,
+                new ScType(),
+                new ScType(ScType.ArcCommon),
+                nameAddr[0],
+                new ScType(ScType.ArcPosConstPerm),
+                ID);
+
+        game.setScAddr(iter5.value(0).getValue());
+        game.setName(this.get(iter5.value(0), ID));
+        game.setCompanyDevelop(this.get(iter5.value(0), COMPANY_DEVELOP));
+        game.setCompanyRelease(this.get(iter5.value(0), COMPANY_RELEASE));
+        game.setEngine(this.get(iter5.value(0), ENGINE));
+        game.setPlatform(this.get(iter5.value(0), PLATFORM));
+        game.setGenre(this.get3(iter5.value(0), GENRE));
+        game.setSetting(this.get3(iter5.value(0), SETTING));
+        return game;
+    }
+
     public ArrayList<Game> getGames(){
         ArrayList<ScAddr> arrOfGamesAddr = new ArrayList<>();
         ArrayList<Game> games = new ArrayList<>();
@@ -81,27 +105,47 @@ public class GameRest {
         return games;
     }
 
+    public ScAddr findNodeById(ScAddr addr, String name) {
+        SctpIterator iter3 = sctpClient.iterate3(SctpIterator.Iterator3F_A_A,
+                                                addr,
+                                                new ScType(ScType.ArcPosConstPerm),
+                                                new ScType(ScType.Node));
+        while (iter3.next()) {
+            if(name.equals(this.get(iter3.value(2), ID))){
+                return iter3.value(2);
+            }
+        }
+        return null;
+    }
+
     public Game getGame(String name){
         Game game = new Game();
         game.setName(name);
-        SctpIterator iter = sctpClient.iterate3(SctpIterator.Iterator3F_A_A,
-                COMPUTER_GAME,
-                new ScType(ScType.ArcPosConstPerm),
-                new ScType(ScType.Node));
-        while(iter.next()){
-            if(name.equals(this.get(iter.value(2), ID))){
-                game.setScAddr(iter.value(2).getValue());
-                game.setName(this.get(iter.value(2), ID));
-                game.setCompanyDevelop(this.get(iter.value(2), COMPANY_DEVELOP));
-                game.setCompanyRelease(this.get(iter.value(2), COMPANY_RELEASE));
-                game.setEngine(this.get(iter.value(2), ENGINE));
-                game.setPlatform(this.get(iter.value(2), PLATFORM));
-                game.setGenre(this.get3(iter.value(2), GENRE));
-                game.setSetting(this.get3(iter.value(2), SETTING));
-            }
-        }
-        System.out.println(game.getScAddr());
+        ScAddr scGame = this.findNodeById(COMPUTER_GAME, name);
+        if(scGame == null)
+            return null;
+        game.setScAddr(scGame.getValue());
+        game.setName(this.get(scGame, ID));
+        game.setCompanyDevelop(this.get(scGame, COMPANY_DEVELOP));
+        game.setCompanyRelease(this.get(scGame, COMPANY_RELEASE));
+        game.setEngine(this.get(scGame, ENGINE));
+        game.setPlatform(this.get(scGame, PLATFORM));
+        game.setGenre(this.get3(scGame, GENRE));
+        game.setSetting(this.get3(scGame, SETTING));
         return game;
+    }
+
+    public void setGame(Game game) {
+        ScAddr scGame = sctpClient.createNode(new ScType(ScType.Node));
+        ScAddr genre = this.findNodeById(GENRE, game.getGenre());
+        ScAddr setting = this.findNodeById(SETTING, game.getSetting());
+        ScAddr companyDevelop = this.findNodeById(COMPANY_DEVELOP, game.getCompanyDevelop());
+        ScAddr companyRelease = this.findNodeById(COMPANY_RELEASE, game.getCompanyRelease());
+        ScAddr platform = this.findNodeById(PLATFORM, game.getPlatform());
+        ScAddr engine = this.findNodeById(ENGINE, game.getEngine());
+        ScAddr name = sctpClient.createLink();
+
+
     }
 
     public void connect(){
@@ -118,8 +162,15 @@ public class GameRest {
         ENGINE = sctpClient.findElementBySystemIdentifier("nrel_game_engine");
         ID = sctpClient.findElementBySystemIdentifier("nrel_main_idtf");
 //        this.getGames();
-        this.getGame("Paragon");
-
+        Game game = this.getGame("Paragon");
+        System.out.println(game.getScAddr() +
+                game.getName() +
+                game.getCompanyDevelop() +
+                game.getCompanyRelease() +
+                game.getEngine() +
+                game.getPlatform() +
+                game.getGenre() +
+                game.getSetting());
     }
 
     public static void main(String[] args) {
