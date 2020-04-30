@@ -110,6 +110,9 @@ public class GameRest {
                                                 addr,
                                                 new ScType(),
                                                 new ScType());
+        if(iter3 == null){
+            return null;
+        }
         while (iter3.next()) {
             if(name.equals(this.get(iter3.value(2), ID))){
                 return iter3.value(2);
@@ -150,7 +153,7 @@ public class GameRest {
         }
         ScAddr nameArc = sctpClient.createArc(game, node, new ScType(ScType.ArcCommon));
         sctpClient.createArc(nrel, nameArc, new ScType(ScType.ArcPosConstPerm));
-        this.addToName(node, name);
+//        this.addToName(node, name);
     }
 
     public ScAddr setGame(Game game) {
@@ -166,21 +169,93 @@ public class GameRest {
         ScAddr conPlatform = sctpClient.findElementBySystemIdentifier("game_platform");
         ScAddr conCompany = sctpClient.findElementBySystemIdentifier("concept_company");
         ScAddr scGame = sctpClient.createNode(new ScType(ScType.Node));
+        if(scGame == null){
+            return null;
+        }
         sctpClient.setSystemIdentifier(scGame, "computer_game_" + game.getName());
         this.addToName(scGame, game.getName());
         ScAddr genre = this.findNodeById(GENRE, game.getGenre());
-        sctpClient.createArc(genre, scGame, new ScType());
+        if(genre != null)
+            sctpClient.createArc(genre, scGame, new ScType(ScType.ArcPosConstPerm));
         ScAddr setting = this.findNodeById(SETTING, game.getSetting());
-        sctpClient.createArc(setting, scGame, new ScType());
+        if(setting != null)
+            sctpClient.createArc(setting, scGame, new ScType(ScType.ArcPosConstPerm));
         ScAddr engine = this.findNodeById(conEngine, game.getEngine());
-        this.addToGame(scGame, engine, ENGINE, game.getEngine());
+        if(engine != null)
+            this.addToGame(scGame, engine, ENGINE, game.getEngine());
         ScAddr companyDevelop = this.findNodeById(conCompany, game.getCompanyDevelop());
-        this.addToGame(scGame, companyDevelop, COMPANY_DEVELOP, game.getCompanyDevelop());
+        if(companyDevelop != null)
+            this.addToGame(scGame, companyDevelop, COMPANY_DEVELOP, game.getCompanyDevelop());
         ScAddr companyRelease = this.findNodeById(conCompany, game.getCompanyRelease());
-        this.addToGame(scGame, companyRelease, COMPANY_RELEASE, game.getCompanyRelease());
+        if(companyRelease != null)
+            this.addToGame(scGame, companyRelease, COMPANY_RELEASE, game.getCompanyRelease());
         ScAddr platform = this.findNodeById(conPlatform, game.getPlatform());
-        this.addToGame(scGame, platform, PLATFORM, game.getPlatform());
+        if(platform != null)
+            this.addToGame(scGame, platform, PLATFORM, game.getPlatform());
         sctpClient.createArc(COMPUTER_GAME, scGame, new ScType(ScType.ArcPosConstPerm));
+        return scGame;
+    }
+
+    public void deleteAcr(ScAddr game, ScAddr node){
+        SctpIterator iter = sctpClient.iterate3(SctpIterator.Iterator3F_A_F,
+                                                game,
+                                                new ScType(),
+                                                node);
+        if(iter.next()){
+            System.out.println(sctpClient.eraseElement(iter.value(1)));
+        }
+    }
+
+    public ScAddr updateGame(Game game){
+        System.out.println(game.getScAddr() +
+                game.getName() +
+                game.getCompanyDevelop() +
+                game.getCompanyRelease() +
+                game.getEngine() +
+                game.getPlatform() +
+                game.getGenre() +
+                game.getSetting());
+        ScAddr conEngine = sctpClient.findElementBySystemIdentifier("game_engine");
+        ScAddr conPlatform = sctpClient.findElementBySystemIdentifier("game_platform");
+        ScAddr conCompany = sctpClient.findElementBySystemIdentifier("concept_company");
+        ScAddr scGame = this.findNodeById(COMPUTER_GAME, game.getName());
+        if(scGame == null){
+            return null;
+        }
+
+
+
+        this.addToName(scGame, game.getName());
+        ScAddr genre = this.findNodeById(GENRE, game.getGenre());
+        if(genre != null) {
+            this.deleteAcr(genre, scGame);
+            sctpClient.createArc(genre, scGame, new ScType(ScType.ArcPosConstPerm));
+        }
+        ScAddr setting = this.findNodeById(SETTING, game.getSetting());
+        if(setting != null){
+            this.deleteAcr(setting, scGame);
+            sctpClient.createArc(setting, scGame, new ScType(ScType.ArcPosConstPerm));
+        }
+        ScAddr engine = this.findNodeById(conEngine, game.getEngine());
+        if(engine != null) {
+            this.deleteAcr(scGame, engine);
+            this.addToGame(scGame, engine, ENGINE, game.getEngine());
+        }
+        ScAddr companyDevelop = this.findNodeById(conCompany, game.getCompanyDevelop());
+        if(companyDevelop != null) {
+            this.deleteAcr(scGame, companyDevelop);
+            this.addToGame(scGame, companyDevelop, COMPANY_DEVELOP, game.getCompanyDevelop());
+        }
+        ScAddr companyRelease = this.findNodeById(conCompany, game.getCompanyRelease());
+        if(companyRelease != null) {
+            this.deleteAcr(scGame, companyRelease);
+            this.addToGame(scGame, companyRelease, COMPANY_RELEASE, game.getCompanyRelease());
+        }
+        ScAddr platform = this.findNodeById(conPlatform, game.getPlatform());
+        if(platform != null) {
+            this.deleteAcr(scGame, platform);
+            this.addToGame(scGame, platform, PLATFORM, game.getPlatform());
+        }
         return scGame;
     }
 
@@ -200,15 +275,15 @@ public class GameRest {
         ID = sctpClient.findElementBySystemIdentifier("nrel_main_idtf");
 
 //        this.getGames();
-        Game game = this.getGame("test_game_5");
-        System.out.println(game.getScAddr() +
-                game.getName() +
-                game.getCompanyDevelop() +
-                game.getCompanyRelease() +
-                game.getEngine() +
-                game.getPlatform() +
-                game.getGenre() +
-                game.getSetting());
+//        Game game = this.getGame("test_game_5");
+//        System.out.println(game.getScAddr() +
+//                game.getName() +
+//                game.getCompanyDevelop() +
+//                game.getCompanyRelease() +
+//                game.getEngine() +
+//                game.getPlatform() +
+//                game.getGenre() +
+//                game.getSetting());
 //        Game game = new Game(0,
 //                "test_game3",
 //                "МОБА",

@@ -18,14 +18,21 @@
             <h2 class="games-base-title">Edit</h2>
             <div class="wrapper">
                 <form action="edit_game_game" method="post">
-                    <input type="text" name="id" hidden="true" value="${game.scAddr}">
-                    <input type="text" name="name" placeholder="Name (Required)" value="${game.name}" minlength="1" required>
-                    <input type="text" name="genre" placeholder="Genre (Required)" value="${game.genre}" minlength="1" required>
-                    <input type="text" name="setting" placeholder="Setting (Required)" value="${game.setting}" minlength="1" required>
-                    <input type="text" name="companyDevelop" placeholder="Company Develop (Required)" value="${game.companyDevelop}" minlength="1" required>
-                    <input type="text" name="companyRelease" placeholder="Company Release (Required)" value="${game.companyRelease}" minlength="1" required>
-                    <input type="text" name="engine" placeholder="Engine (Required)" value="${game.engine}" minlength="1" required>
-                    <input type="text" name="platform" placeholder="Platform (Required)" value="${game.platform}" minlength="1" required>
+                    <input class="games-base-button" type="submit" value="Edit">
+                    <h3 class="games-base-names">Name:</h3><br>
+                    <input type="text" name="name" placeholder="Name (Required)" value="${game.name}" minlength="1" ><br>
+                    <h3 class="games-base-names">Genre:</h3><br>
+                    <input type="text" name="genre" placeholder="Genre (Required)" value="${game.genre}" minlength="1" ><br>
+                    <h3 class="games-base-names">Setting:</h3><br>
+                    <input type="text" name="setting" placeholder="Setting (Required)" value="${game.setting}" minlength="1" ><br>
+                    <h3 class="games-base-names">Company Develop:</h3><br>
+                    <input type="text" name="companyDevelop" placeholder="Company Develop (Required)" value="${game.companyDevelop}" minlength="1" ><br>
+                    <h3 class="games-base-names">Company Release:</h3><br>
+                    <input type="text" name="companyRelease" placeholder="Company Release (Required)" value="${game.companyRelease}" minlength="1" ><br>
+                    <h3 class="games-base-names">Engine:</h3><br>
+                    <input type="text" name="engine" placeholder="Engine (Required)" value="${game.engine}" minlength="1" ><br>
+                    <h3 class="games-base-names">Platform:</h3><br>
+                    <input type="text" name="platform" placeholder="Platform (Required)" value="${game.platform}" minlength="1" ><br>
                     <input class="games-base-button" type="submit" value="Submit">
                 </form>
             </div>
