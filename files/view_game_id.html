@@ -18,8 +18,7 @@
             <h2 class="games-base-title">Show Game</h2>
 <!--            <input class="games-base-button" type="submit" value="Edit" onClick='location.href="edit_game_id?name=${game.name}"'>-->
             <div class="wrapper">
-<!--                <form action="#" method="get">-->
-                    <form action="edit_game_id" method="post">
+                <form action="edit_game_id" method="post">
                         <input class="games-base-button" type="submit" value="Edit">
                         <h3 class="games-base-names">Name:</h3><br>
                         <input type="text" name="name"  value="${game.name}" minlength="1" readonly><br>
@@ -35,8 +34,12 @@
                         <input type="text" name="engine"  value="${game.engine}" minlength="1" readonly><br>
                         <h3 class="games-base-names">Platform:</h3><br>
                         <input type="text" name="platform"  value="${game.platform}" minlength="1" readonly><br>
-                    </form>
+                </form>
             </div>
+            <form action="delete_game_id" method="post">
+                <input class="games-base-button" type="submit" value="Delete">
+                <input type="text" name="name"  value="${game.name}" minlength="1" hidden="true"><br>
+            </form><br>
             <div>
                 <input class="games-base-button" type="submit" value="Back" onClick='location.href="view_game"'>
                 <textarea name="description" cols="30" rows="12"></textarea>

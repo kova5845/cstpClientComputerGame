@@ -14,7 +14,7 @@ public class GameRest {
 
     private SctpClient sctpClient;
 
-    public String get(ScAddr game, ScAddr elem){
+    private String get(ScAddr game, ScAddr elem){
         SctpIterator iter5 = sctpClient.iterate5(SctpIterator.Iterator5F_A_A_A_F,
                 game,
                 new ScType(),
@@ -32,7 +32,7 @@ public class GameRest {
         return "";
     }
 
-    public String get3(ScAddr game, ScAddr elem){
+    private String get3(ScAddr game, ScAddr elem){
         SctpIterator iter3 = sctpClient.iterate3(SctpIterator.Iterator3F_A_A,
                                                 elem,
                                                 new ScType(),
@@ -105,7 +105,7 @@ public class GameRest {
         return games;
     }
 
-    public ScAddr findNodeById(ScAddr addr, String name) {
+    private ScAddr findNodeById(ScAddr addr, String name) {
         SctpIterator iter3 = sctpClient.iterate3(SctpIterator.Iterator3F_A_A,
                                                 addr,
                                                 new ScType(),
@@ -122,6 +122,7 @@ public class GameRest {
     }
 
     public Game getGame(String name){
+        this.connect();
         System.out.println("name of game is:" + name);
         Game game = new Game();
         game.setName(name);
@@ -139,24 +140,23 @@ public class GameRest {
         return game;
     }
 
-    public void addToName(ScAddr game, String nodeName){
+    private void addToName(ScAddr game, String nodeName){
         ScAddr name = sctpClient.createLink();
         sctpClient.setLinkContent(name, SctpClient.ByteBufferFromString(nodeName));
         ScAddr nameArc = sctpClient.createArc(game, name, new ScType(ScType.ArcCommon));
         sctpClient.createArc(ID, nameArc, new ScType(ScType.ArcPosConstPerm));
     }
 
-    public void addToGame(ScAddr game, ScAddr node, ScAddr nrel, String name){
+    private void addToGame(ScAddr game, ScAddr node, ScAddr nrel){
         if(node == null) {
-            System.out.println(name);
             return;
         }
         ScAddr nameArc = sctpClient.createArc(game, node, new ScType(ScType.ArcCommon));
         sctpClient.createArc(nrel, nameArc, new ScType(ScType.ArcPosConstPerm));
-//        this.addToName(node, name);
     }
 
     public ScAddr setGame(Game game) {
+        this.connect();
         System.out.println(game.getScAddr() +
                 game.getName() +
                 game.getCompanyDevelop() +
@@ -182,23 +182,25 @@ public class GameRest {
             sctpClient.createArc(setting, scGame, new ScType(ScType.ArcPosConstPerm));
         ScAddr engine = this.findNodeById(conEngine, game.getEngine());
         if(engine != null)
-            this.addToGame(scGame, engine, ENGINE, game.getEngine());
+            this.addToGame(scGame, engine, ENGINE);
         ScAddr companyDevelop = this.findNodeById(conCompany, game.getCompanyDevelop());
         if(companyDevelop != null)
-            this.addToGame(scGame, companyDevelop, COMPANY_DEVELOP, game.getCompanyDevelop());
+            this.addToGame(scGame, companyDevelop, COMPANY_DEVELOP);
         ScAddr companyRelease = this.findNodeById(conCompany, game.getCompanyRelease());
         if(companyRelease != null)
-            this.addToGame(scGame, companyRelease, COMPANY_RELEASE, game.getCompanyRelease());
+            this.addToGame(scGame, companyRelease, COMPANY_RELEASE);
         ScAddr platform = this.findNodeById(conPlatform, game.getPlatform());
         if(platform != null)
-            this.addToGame(scGame, platform, PLATFORM, game.getPlatform());
+            this.addToGame(scGame, platform, PLATFORM);
         sctpClient.createArc(COMPUTER_GAME, scGame, new ScType(ScType.ArcPosConstPerm));
         return scGame;
     }
 
-    public void deleteAcr(ScAddr game, ScAddr node){
-        SctpIterator iter = sctpClient.iterate3(SctpIterator.Iterator3F_A_F,
+    private void deleteArc(ScAddr game, ScAddr node){
+        SctpIterator iter = sctpClient.iterate5(SctpIterator.Iterator5F_A_A_A_F,
                                                 game,
+                                                new ScType(),
+                                                new ScType(),
                                                 new ScType(),
                                                 node);
         if(iter.next()){
@@ -206,7 +208,29 @@ public class GameRest {
         }
     }
 
+    private void deleteArc3(ScAddr game, ScAddr node, ScAddr elem){
+        SctpIterator iter = sctpClient.iterate3(SctpIterator.Iterator3F_A_F,
+                                                elem,
+                                                new ScType(),
+                                                node);
+        while(iter.next()){
+            SctpIterator iter3 = sctpClient.iterate3(SctpIterator.Iterator3F_A_F,
+                                                    node,
+                                                    new ScType(),
+                                                    game);
+            if(iter3.next()){
+                sctpClient.eraseElement(iter3.value(1));
+                return;
+            }
+        }
+
+        if(iter.next()){
+            System.out.println(sctpClient.eraseElement(iter.value(1)));
+        }
+    }
+
     public ScAddr updateGame(Game game){
+        this.connect();
         System.out.println(game.getScAddr() +
                 game.getName() +
                 game.getCompanyDevelop() +
@@ -222,47 +246,55 @@ public class GameRest {
         if(scGame == null){
             return null;
         }
-
-
-
+        this.deleteArc(scGame, ID);
         this.addToName(scGame, game.getName());
         ScAddr genre = this.findNodeById(GENRE, game.getGenre());
         if(genre != null) {
-            this.deleteAcr(genre, scGame);
+            this.deleteArc3(scGame, genre, GENRE);
             sctpClient.createArc(genre, scGame, new ScType(ScType.ArcPosConstPerm));
         }
         ScAddr setting = this.findNodeById(SETTING, game.getSetting());
         if(setting != null){
-            this.deleteAcr(setting, scGame);
+            this.deleteArc3(scGame, setting, SETTING);
             sctpClient.createArc(setting, scGame, new ScType(ScType.ArcPosConstPerm));
         }
         ScAddr engine = this.findNodeById(conEngine, game.getEngine());
         if(engine != null) {
-            this.deleteAcr(scGame, engine);
-            this.addToGame(scGame, engine, ENGINE, game.getEngine());
+            this.deleteArc(scGame, ENGINE);
+            this.addToGame(scGame, engine, ENGINE);
         }
         ScAddr companyDevelop = this.findNodeById(conCompany, game.getCompanyDevelop());
         if(companyDevelop != null) {
-            this.deleteAcr(scGame, companyDevelop);
-            this.addToGame(scGame, companyDevelop, COMPANY_DEVELOP, game.getCompanyDevelop());
+            this.deleteArc(scGame, COMPANY_DEVELOP);
+            this.addToGame(scGame, companyDevelop, COMPANY_DEVELOP);
         }
         ScAddr companyRelease = this.findNodeById(conCompany, game.getCompanyRelease());
         if(companyRelease != null) {
-            this.deleteAcr(scGame, companyRelease);
-            this.addToGame(scGame, companyRelease, COMPANY_RELEASE, game.getCompanyRelease());
+            this.deleteArc(scGame, COMPANY_RELEASE);
+            this.addToGame(scGame, companyRelease, COMPANY_RELEASE);
         }
         ScAddr platform = this.findNodeById(conPlatform, game.getPlatform());
         if(platform != null) {
-            this.deleteAcr(scGame, platform);
-            this.addToGame(scGame, platform, PLATFORM, game.getPlatform());
+            this.deleteArc(scGame, PLATFORM);
+            this.addToGame(scGame, platform, PLATFORM);
         }
         return scGame;
+    }
+
+    public boolean deleteGame(String name){
+        this.connect();
+        ScAddr scGame = this.findNodeById(COMPUTER_GAME, name);
+        if(scGame == null){
+            return false;
+        }
+        return sctpClient.eraseElement(scGame);
     }
 
     public boolean connect(){
         boolean flag = false;
         sctpClient = new SctpClient();
         if(sctpClient.connect("localhost", 55770)){
+            System.out.println("Connect success");
             flag = true;
         }
         COMPUTER_GAME = sctpClient.findElementBySystemIdentifier("concept_computer_game");

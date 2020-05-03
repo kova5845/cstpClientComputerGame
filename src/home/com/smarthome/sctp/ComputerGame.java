@@ -35,10 +35,9 @@ public class ComputerGame extends Thread{
         this.socket = socket;
         this.directory = directory;
         this.gameRest = new GameRest();
-        if(this.gameRest.connect()){
-            System.out.println("Connect Success");
-        }
-
+//        if(this.gameRest.connect()){
+//            System.out.println("Connect Success");
+//        }
     }
 
     @Override
@@ -74,6 +73,9 @@ public class ComputerGame extends Thread{
                                     break;
                                 case "/edit_game_id":
                                     this.edit_game_id(requestType, cfg, output, requestText.get("requestBody"));
+                                    break;
+                                case "/delete_game_id":
+                                    this.delete_game_id(requestType, cfg, output, requestText.get("requestBody"));
                                     break;
                                 default:
                                     String type = CONTENT_TYPES.get("text");
@@ -185,6 +187,7 @@ public class ComputerGame extends Thread{
         Game game = gameRest.getGame(name);
         if(game == null){
             this.redirect("view_game", output);
+            return;
         }
         Path filePath = Path.of(directory + "/edit_game_id.html");
         Map<String, Object> root = new HashMap<>();
@@ -199,22 +202,11 @@ public class ComputerGame extends Thread{
         writer.flush();
     }
 
-    private void delete_game_id(String requestType, Configuration cfg, OutputStream output, String id) throws IOException, TemplateException {
-        System.out.println(id);
-        Path filePath = Path.of(directory + "/view_game.html");
-        Map<String, Object> root = new HashMap<>();
-        ArrayList<Game> games = new ArrayList<>();
-        games.add(new Game(1, "Dota 2", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
-        games.add(new Game(1, "CS:GO", "MOBA", "Fantasy", "Valve", "Valve", "Source 2", "Windows"));
-        root.put("games", games);
-        Template template = cfg.getTemplate("/view_game.html");
-        String extension = this.getFileExtension(filePath);
-        String type = CONTENT_TYPES.get(extension);
-        byte[] fileBytes = Files.readAllBytes(filePath);
-        this.sendHeader(output, 200, "OK", type, fileBytes.length, requestType);
-        Writer writer = new OutputStreamWriter(output);
-        template.process(root, writer);
-        writer.flush();
+    private void delete_game_id(String requestType, Configuration cfg, OutputStream output, String body) throws IOException, TemplateException {
+        String name = body.split("=")[1].replace("+", " ");
+        System.out.println(name);
+        gameRest.deleteGame(name);
+        this.redirect("view_game", output);
     }
 
     private void view_game_id(String requestType, Configuration cfg, OutputStream output, String body) throws IOException, TemplateException {
